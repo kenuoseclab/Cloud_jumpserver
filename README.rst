@@ -4,7 +4,8 @@
 说明如下(需要更新)：
 
 ::
-.
+
+    .
     ├── apps                             // 管理后台目录,也是各apps 所在目录
     │   ├── assets                       // 资产管理app(应用)
     │   │   ├── api                      // Restful api 逻辑代码,views模块对应
