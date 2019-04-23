@@ -1,0 +1,259 @@
+{% extends '_base_list.html' %}
+{% load i18n static %}
+{% block table_search %}
+<link href="{% static 'css/plugins/ztree/awesomeStyle/awesome.css' %}" rel="stylesheet">
+{#    <link href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css" rel="stylesheet">#}
+<script type="text/javascript" src="{% static 'js/plugins/ztree/jquery.ztree.all.min.js' %}"></script>
+<script src="{% static 'js/jquery.form.min.js' %}"></script>
+
+    <div class="html5buttons">
+        <div class="dt-buttons btn-group">
+            <a class="btn btn-default btn_import" data-toggle="modal" data-target="#cloud_account_import_modal" tabindex="0">
+                <span>{% trans "Import" %}</span>
+            </a>
+            <a class="btn btn-default btn_export" tabindex="0">
+                <span>{% trans "Export" %}</span>
+            </a>
+        </div>
+    </div>
+{% endblock %}
+{% block table_container %}
+<div class="uc pull-left m-r-5"><a href='{% url "accounts:account-create" %}' class="btn btn-sm btn-primary"> {% trans "Create cloud account" %} </a></div>
+<table class="table table-striped table-bordered table-hover " id="cloud_account_list_table" >
+    <thead>
+        <tr>
+            <th class="text-center">
+                <input id="" type="checkbox" class="ipt_check_all">
+            </th>
+            <th class="text-center">{% trans 'Account Name' %}</th>
+            <th class="text-center">{% trans 'Cloud Provider' %}</th>
+            <th class="text-center">{% trans 'AccessKey ID' %}</th>
+            <th class="text-center">{% trans 'Is Available' %}</th>
+            <th class="text-center">{% trans 'Last sync time' %}</th>
+            <th class="text-center">{% trans 'Action' %}</th>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+<div id="actions" class="hide">
+    <div class="input-group">
+        <select class="form-control m-b" style="width: auto" id="slct_bulk_update">
+            <option value="delete">{% trans 'Delete selected' %}</option>
+        </select>
+        <div class="input-group-btn pull-left" style="padding-left: 5px;">
+            <button id='btn_bulk_update' style="height: 32px;"  class="btn btn-sm btn-primary">
+             {% trans 'Submit' %}
+            </button>
+        </div>
+    </div>
+</div>
+{% include "accounts/_cloud_account_import_modal.html" %}
+{% include 'accounts/_account_asset_import_modal.html' %}
+
+{% endblock %}
+{% block content_bottom_left %}{% endblock %}
+{% block custom_foot_js %}
+<script src="{% static 'js/jquery.form.min.js' %}"></script>
+<script>
+
+String.prototype.format=function(){
+    var args = Array.prototype.slice.call(arguments);
+    var count=0;
+    return this.replace(/%s/g,function(s,i){
+    return args[count++];
+    });
+}
+
+function initTable() {
+     var options = {
+        ele: $('#cloud_account_list_table'),
+        columnDefs: [
+            {targets: 1, createdCell: function (td, cellData, rowData) {
+                var detail_btn = '<a href="{% url "accounts:account-detail" pk=DEFAULT_PK %}">' + cellData + '</a>';
+                $(td).html(detail_btn.replace("{{ DEFAULT_PK }}", rowData.id));
+             }},
+            {targets: 4, createdCell: function (td, cellData, rowData) {
+                if (cellData) {
+                    $(td).html('<i class="fa fa-check text-navy"></i>')
+                } else{
+                    $(td).html('<i class="fa fa-times text-danger inactive"></i>')
+                }
+             }},
+            {targets: 6, createdCell: function (td, cellData, rowData) {
+
+               var update_btn = '<a href="{% url "accounts:account-update" pk=DEFAULT_PK %}" class="btn btn-xs btn-info">{% trans "Update" %}</a>'.replace('{{ DEFAULT_PK }}', cellData);
+               var del_btn = '<a class="btn btn-xs btn-danger m-l-xs btn_account_delete" data-aid="{{ DEFAULT_PK }}" data-name="99991939">{% trans "Delete" %}</a>'.replace('{{ DEFAULT_PK }}', cellData).replace('99991939', rowData.name);
+               var sync_btn = '<a  class="btn btn-xs btn-primary m-l-xs btn_account_asset_import"  data-aid="{{ DEFAULT_PK }}"  data-toggle="modal" data-target="#account_asset_import_modal" tabindex="0">{% trans "Sync Assets" %}</a>'.replace('{{ DEFAULT_PK }}', cellData);
+
+                $(td).html(update_btn + del_btn + sync_btn)
+             }}],
+        ajax_url: '{% url "api-accounts:account-list" %}',
+        columns: [
+            {data: "id"}, {data: "name" },
+            {data: "cloud_provider_display" },
+            {data: "accesskey_id", orderable: false},
+            {data: "is_available", orderable: false},
+            {data: "last_sync_time"},
+            {data: "id", orderable: false}
+        ],
+        op_html: $('#actions').html()
+    };
+    var table = jumpserver.initServerSideDataTable(options);
+    return table
+}
+
+$(document).ready(function(){
+    var table = initTable();
+
+    $('.btn_export').click(function () {
+        var accounts = [];
+        var rows = table.rows('.selected').data();
+        if(rows.length===0){
+            rows = table.rows().data();
+        }
+        $.each(rows, function (index, obj) {
+            accounts.push(obj.id)
+        });
+        $.ajax({
+            url: "{% url 'accounts:account-export' %}",
+            method: 'POST',
+            data: JSON.stringify({accounts_id: accounts}),
+            dataType: "json",
+            success: function (data, textStatus) {
+                window.open(data.redirect)
+            },
+            error: function () {
+                toastr.error('Export failed');
+            }
+        })
+    });
+
+    $('#btn_cloud_account_import').click(function() {
+        var $form = $('#fm_cloud_account_import');
+        $form.find('.help-block').remove();
+        function success (data) {
+            if (data.valid === false) {
+                $('<span />', {class: 'help-block text-danger'}).html(data.msg).insertAfter($('#id_accounts'));
+            } else {
+                $('#id_created').html(data.created_info);
+                $('#id_created_detail').html(data.created.join(', '));
+                $('#id_updated').html(data.updated_info);
+                $('#id_updated_detail').html(data.updated.join(', '));
+                $('#id_failed').html(data.failed_info);
+                $('#id_failed_detail').html(data.failed.join(', '));
+                var $data_table = $('#cloud_account_list_table').DataTable();
+                $data_table.ajax.reload();
+            }
+        }
+        $form.ajaxSubmit({success: success});
+    })
+
+})
+
+.on('click', '#btn_bulk_update', function(){
+    var action = $('#slct_bulk_update').val();
+    var $data_table = $('#cloud_account_list_table').DataTable();
+    var id_list = [];
+    var plain_id_list = [];
+    $data_table.rows({selected: true}).every(function(){
+        id_list.push({pk: this.data().id});
+        plain_id_list.push(this.data().id);
+    });
+    if (id_list === []) {
+        return false;
+    }
+    var the_url = "{% url 'api-accounts:account-list' %}";
+    function doDelete() {
+        swal({
+            title: "{% trans 'Are you sure?' %}",
+            text: "{% trans 'This will delete the selected Cloud Account !!!' %}",
+            type: "warning",
+            showCancelButton: true,
+            cancelButtonText: "{% trans 'Cancel' %}",
+            confirmButtonColor: "#DD6B55",
+            confirmButtonText: "{% trans 'Confirm' %}",
+            closeOnConfirm: false
+        }, function() {
+            var success = function() {
+                var msg = "{% trans 'Cloud Account Deleted.' %}";
+                swal("{% trans 'Cloud Account Delete' %}", msg, "success");
+                $('#cloud_account_list_table').DataTable().ajax.reload();
+            };
+            var fail = function() {
+                var msg = "{% trans 'Cloud Account Deleting failed.' %}";
+                swal("{% trans 'Cloud Account Delete' %}", msg, "error");
+            };
+            var url_delete = the_url + '?id__in=' + JSON.stringify(plain_id_list);
+            APIUpdateAttr({url: url_delete, method: 'DELETE', success: success, error: fail});
+            jumpserver.checked = false;
+        });
+    }
+    switch(action) {
+        case 'delete':
+            doDelete();
+            break;
+        default:
+            break;
+    }
+})
+.on('click', '.btn_account_delete', function(){
+    var $this = $(this);
+    var name = $this.data('name');
+    var a_id = $this.data('aid');
+    var the_url = '{% url "api-accounts:account-detail" pk=DEFAULT_PK %}'.replace("{{ DEFAULT_PK }}", a_id);
+    objectDelete($this, name, the_url);
+})
+.on('click', '.btn_account_asset_import', function(){
+
+    var $this=$(this);
+    var a_id = $this.data("aid");
+    var view_url = '{% url "accounts:account-asset-import" pk=DEFAULT_PK %}'.replace("{{ DEFAULT_PK }}", a_id);
+    var api_url = '{% url "api-accounts:account-assets" pk=DEFAULT_PK %}'.replace("{{ DEFAULT_PK }}", a_id);
+    var $load_asset = $('#load-asset');
+    var $table=$('#pre_asset_list_table');
+    var $form = $('#fm_account_asset_import');
+    var $is_instance=$('#no-instance');
+
+
+    $form.attr("action",view_url);
+    $('#id_account_id').attr('value', a_id);
+    $.ajax({
+        url: api_url,
+        method: 'POST',
+        dataType: "json",
+        sync:false,
+        success :function (data) {
+             $is_instance.css("display","none")
+            var obj = eval(data);
+            var tbody = $('<tbody></tbody>');
+            $(obj).each(function (index){
+                var ele = "<tr role='row' class='text-center' ></tr>";
+                var tr = $(ele);
+                var val = obj[index];
+                tr.append('<td>' + '<input type="checkbox"  class="text-center" >' + '</td>' +
+                          '<td>' +
+                                   '<font size="2" color="#1e90ff" >' + val.hostname+ '</font>' +
+                          '</td>' +
+                          '<td>' + val.ip + '</td>' +
+                          '<td>' + val.connectivity +'</td>'
+                          );
+                tbody.append(tr);
+                });
+              $('#pre_asset_list_table tbody').replaceWith(tbody);
+              $load_asset.css("display","none");
+              $table.css("visibility","visible");
+              },
+        error: function(XMLResponse) {
+
+           var error_msg = XMLResponse.responseText;
+           var error_res =  JSON.parse(error_msg);
+           var tans_err_msg = "{% trans '%s' %}".format(error_res.msg);
+           $is_instance.html(tans_err_msg);
+           $is_instance.css("display","block");
+           $load_asset.css("display","none");
+           }
+    });
+});
+</script>
+{% endblock %}

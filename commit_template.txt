@@ -1,0 +1,16 @@
+﻿Fix:/api_status请求无返回值
+
+Description: 在api_status函数新加else判断语句
+
+OverView:  详见Systeminfo.py,lines:56-58
+
+# --- 结束 ---
+# 类型值包含
+#    feat (新特性)
+#    fix (bug修复)
+#    docs (文档改动)
+#    style (格式化, 缺失分号等; 不包括生产代码变动)
+#    refactor (重构代码)
+#    test (添加缺失的测试, 重构测试, 不包括生产代码变动)
+#    chore (更新grunt任务等; 不包括生产代码变动)
+

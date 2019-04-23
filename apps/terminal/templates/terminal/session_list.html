@@ -1,0 +1,226 @@
+{% extends '_base_list.html' %}
+{% load i18n %}
+{% load static %}
+{% load terminal_tags %}
+{% load common_tags %}
+{% block custom_head_css_js %}
+    <link href="{% static 'css/plugins/datepicker/datepicker3.css' %}" rel="stylesheet">
+    <link href="{% static 'css/plugins/select2/select2.min.css' %}" rel="stylesheet">
+    <script src="{% static 'js/plugins/select2/select2.full.min.js' %}"></script>
+    <style>
+        #search_btn {
+            margin-bottom: 0;
+        }
+    </style>
+{% endblock %}
+
+{% block content_left_head %}
+{% endblock %}
+
+
+{% block table_search %}
+    <form id="search_form" method="get" action="" class="pull-right form-inline">
+        <div class="form-group" id="date">
+            <div class="input-daterange input-group" id="datepicker">
+                <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                <input type="text" class="input-sm form-control" style="width: 100px;" name="date_from" value="{{ date_from|date:'Y-m-d' }}">
+                <span class="input-group-addon">to</span>
+                <input type="text" class="input-sm form-control" style="width: 100px;" name="date_to" value="{{ date_to|date:'Y-m-d' }}">
+            </div>
+        </div>
+        <div class="input-group">
+            <select class="select2 form-control" name="user">
+                <option value="">{% trans 'User' %}</option>
+                {% for u in user_list %}
+                    <option value="{{ u }}" {% if u == user %} selected {% endif %}>{{ u }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="input-group">
+            <select class="select2 form-control" name="asset">
+                <option value="">{% trans 'Asset' %}</option>
+                {% for a in asset_list %}
+                    <option value="{{ a }}" {% if a == asset %} selected {% endif %}>{{ a }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="input-group">
+            <select class="select2 form-control" name="system_user">
+                <option value="">{% trans 'System user' %}</option>
+                {% for su in system_user_list %}
+                    <option value="{{ su }}" {% if su == system_user %} selected {% endif %}>{{ su }}</option>
+                {% endfor %}
+            </select>
+        </div>
+{#        <div class="input-group">#}
+{#            <input type="text" class="form-control input-sm" name="keyword" placeholder="Keyword" value="{{ keyword }}">#}
+{#        </div>#}
+        <div class="input-group">
+            <div class="input-group-btn">
+                <button id='search_btn' type="submit" class="btn btn-sm btn-primary">
+                    {% trans 'Search' %}
+                </button>
+            </div>
+        </div>
+    </form>
+{% endblock %}
+
+{% block table_head %}
+    <th class="text-center"></th>
+    <th class="text-center">{% trans 'ID' %}</th>
+    <th class="text-center">{% trans 'User' %}</th>
+    <th class="text-center">{% trans 'Asset' %}</th>
+    <th class="text-center">{% trans 'System user' %}</th>
+    <th class="text-center">{% trans 'Remote addr' %}</th>
+    <th class="text-center">{% trans 'Protocol' %}</th>
+    <th class="text-center">{% trans 'Login from' %}</th>
+    <th class="text-center">{% trans 'Command' %}</th>
+    <th class="text-center">{% trans 'Date start' %}</th>
+{#    <th class="text-center">{% trans 'Date last active' %}</th>#}
+    <th class="text-center">{% trans 'Duration' %}</th>
+    <th class="text-center">{% trans 'Action' %}</th>
+{% endblock %}
+
+{% block table_body %}
+    {% for session in session_list %}
+        <tr class="gradeX">
+            <td class="text-center"><input type="checkbox" class="cbx-term" value="{{ session.id }}"></td>
+            <td class="text-center">
+                <a href="{% url 'terminal:session-detail' pk=session.id %}">{{ forloop.counter }}</a>
+            </td>
+            <td class="text-center">{{ session.user }}</td>
+            <td class="text-center">{{ session.asset }}</td>
+            <td class="text-center">{{ session.system_user }}</td>
+            <td class="text-center">{{ session.remote_addr|default:"" }}</td>
+            <td class="text-center">{{ session.protocol }}</td>
+            <td class="text-center">{{ session.get_login_from_display }}</td>
+            <td class="text-center">{{ session.command_amount }}</td>
+
+            <td class="text-center">{{ session.date_start }}</td>
+{#            <td class="text-center">{{ session.date_last_active }}</td>#}
+            <td class="text-center">{{ session.date_start|time_util_with_seconds:session.date_end }}</td>
+            <td>
+                {% if session.is_finished %}
+                <a onclick="window.open('/luna/replay/{{ session.id }}','luna', 'height=600, width=800, top=400, left=400, toolbar=no, menubar=no, scrollbars=no, location=no, status=no')" class="btn btn-xs btn-warning btn-replay" >{% trans "Replay" %}</a>
+                {% else %}
+                <!--<a onclick="window.open('/luna/monitor/{{ session.id }}','luna', 'height=600, width=800, top=0, left=0, toolbar=no, menubar=no, scrollbars=no, location=no, status=no')" class="btn btn-xs btn-warning btn-monitor" >{% trans "Monitor" %}</a>-->
+                    {% if session.protocol == 'ssh' %}
+                        <a class="btn btn-xs btn-danger btn-term" value="{{ session.id }}" terminal="{{ session.terminal.id }}" >{% trans "Terminate" %}</a>
+                    {% else %}
+                        <a class="btn btn-xs btn-danger btn-term" disabled value="{{ session.id }}" terminal="{{ session.terminal.id }}" >{% trans "Terminate" %}</a>
+                    {% endif %}
+                {% endif %}
+            </td>
+        </tr>
+    {% endfor %}
+{% endblock %}
+
+{% block content_bottom_left %}
+    <div id="actions" {% if type != "online" %} style="display: none" {% endif %}>
+        <div class="input-group">
+            <select class="form-control m-b" style="width: auto" id="slct_bulk_update">
+                <option value="terminate">{% trans 'Terminate selected' %}</option>
+                <option value="finished">{% trans 'Confirm finished' %}</option>
+            </select>
+            <div class="input-group-btn pull-left" style="padding-left: 5px;">
+                <button id='btn_bulk_update' style="height: 32px;"  class="btn btn-sm btn-primary">
+                 {% trans 'Submit' %}
+                </button>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block custom_foot_js %}
+    <script src="{% static 'js/plugins/datepicker/bootstrap-datepicker.js' %}"></script>
+    <script>
+        function terminateSession(data) {
+            function success() {
+                window.setTimeout(function () {
+                    window.location.reload()
+                }, 1000)
+            }
+            var success_message = '{% trans "Terminate task send, waiting ..." %}';
+            var the_url = "{% url 'api-terminal:kill-session' %}";
+            APIUpdateAttr({
+                url: the_url,
+                method: 'POST',
+                body: JSON.stringify(data),
+                success: success,
+                success_message: success_message
+            });
+        }
+
+        function finishedSession(data) {
+            var the_url = "{% url 'api-terminal:session-list' %}";
+            var success_message = '{% trans "Finish session success" %}';
+            var success = function() {
+              location.reload();
+            };
+            APIUpdateAttr({
+                url: the_url,
+                method: 'PATCH',
+                body: JSON.stringify(data),
+                success: success,
+                success_message: success_message
+            });
+        }
+        $(document).ready(function() {
+            jumpserver.initStaticTable('table');
+            $('.select2').select2({
+                dropdownAutoWidth: true,
+                width: "auto"
+            });
+            $('.input-daterange.input-group').datepicker({
+                format: "yyyy-mm-dd",
+                todayBtn: "linked",
+                keyboardNavigation: false,
+                forceParse: false,
+                calendarWeeks: true,
+                autoclose: true
+            });
+        }).on('click', '.btn-term', function () {
+            var $this = $(this);
+            var session_id = $this.attr('value');
+            var data = [
+                session_id
+            ];
+            terminateSession(data)
+        }).on('click', '#btn_bulk_update', function () {
+            var action = $('#slct_bulk_update').val();
+            var id_list = [];
+            $(".cbx-term:checked").each(function (index, data) {
+                id_list.push($(data).attr("value"))
+            });
+            if (id_list.length === 0) {
+                return false;
+            }
+
+            function doTerminate() {
+                terminateSession(id_list)
+            }
+
+            function doFinishSession() {
+               var data = [];
+               $.each(id_list, function (i, v) {
+                   data.push({
+                       "pk": v,
+                       "is_finished": true
+                   })
+               });
+               finishedSession(data)
+            }
+            switch(action) {
+                case 'terminate':
+                    doTerminate();
+                    break;
+                case "finished":
+                    doFinishSession();
+                    break;
+                default:
+                    break;
+            }
+        });
+    </script>
+{% endblock %}
+

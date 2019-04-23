@@ -1,0 +1,255 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block custom_head_css_js %}
+    <link href="{% static 'css/plugins/select2/select2.min.css' %}" rel="stylesheet">
+    <script src="{% static 'js/plugins/select2/select2.full.min.js' %}"></script>
+{% endblock %}
+{% block content %}
+    <div class="wrapper wrapper-content animated fadeInRight">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="ibox float-e-margins">
+                    <div class="panel-options">
+                        <ul class="nav nav-tabs">
+                            <li>
+                                <a href="{% url 'perms:asset-permission-detail' pk=asset_permission.id %}" class="text-center">
+                                    <i class="fa fa-laptop"></i> {% trans 'Detail' %} </a>
+                            </li>
+                            <li>
+                                <a href="{% url 'perms:asset-permission-user-list' pk=asset_permission.id %}" class="text-center">
+                                <i class="fa fa-bar-chart-o"></i> {% trans 'Users and user groups' %}
+                                </a>
+                            </li>
+                            <li class="active">
+                                <a href="{% url 'perms:asset-permission-asset-list' pk=asset_permission.id  %}" class="text-center">
+                                <i class="fa fa-bar-chart-o"></i> {% trans 'Assets and node' %}</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="tab-content">
+                        <div class="col-sm-7" style="padding-left: 0;">
+                            <div class="ibox float-e-margins">
+                                <div class="ibox-title">
+                                    <span style="float: left">{% trans 'Asset list of ' %} <b>{{ asset_permission.name }}</b></span>
+                                    <div class="ibox-tools">
+                                        <a class="collapse-link">
+                                            <i class="fa fa-chevron-up"></i>
+                                        </a>
+                                        <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                                            <i class="fa fa-wrench"></i>
+                                        </a>
+                                        <ul class="dropdown-menu dropdown-user">
+                                        </ul>
+                                        <a class="close-link">
+                                            <i class="fa fa-times"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="ibox-content">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>{% trans 'Hostname' %}</th>
+                                                <th>{% trans 'IP' %}</th>
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for asset in object_list %}
+                                            <tr>
+                                                <td>{{ asset.hostname }}</td>
+                                                <td>{{ asset.ip }}</td>
+                                                <td>
+                                                    <button title="{{ asset.inherit }}" data-gid="{{ asset.id }}" class="btn btn-danger btn-xs btn-remove-asset {% if asset.inherit %} disabled {% endif %}" type="button" style="float: right;"><i class="fa fa-minus"></i></button>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                    <div class="row">
+                                        {% include '_pagination.html' %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-5" style="padding-left: 0;padding-right: 0">
+                            <div class="panel panel-primary">
+                                <div class="panel-heading">
+                                    <i class="fa fa-info-circle"></i> {% trans 'Add asset to this permission' %}
+                                </div>
+                                <div class="panel-body">
+                                    <table class="table">
+                                        <tbody>
+                                        <form>
+                                            <tr class="no-borders-tr">
+                                                <td colspan="2">
+                                                    <select data-placeholder="{% trans 'Select assets' %}" class="select2" id="asset_select2" style="width: 100%" multiple="" tabindex="4">
+                                                        {% for asset in assets_remain %}
+                                                            <option value="{{ asset.id }}">{{ asset }}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </td>
+                                            </tr>
+                                            <tr class="no-borders-tr">
+                                                <td colspan="2">
+                                                    <button type="button" class="btn btn-primary btn-sm btn-add-assets">{% trans 'Add' %}</button>
+                                                </td>
+                                            </tr>
+                                        </form>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div class="panel panel-info">
+                                <div class="panel-heading">
+                                    <i class="fa fa-info-circle"></i> {% trans 'Add node to this permission' %}
+                                </div>
+                                <div class="panel-body">
+                                    <table class="table group_edit">
+                                        <tbody>
+                                        <form>
+                                            <tr>
+                                                <td colspan="2" class="no-borders">
+                                                    <select data-placeholder="{% trans 'Select nodes' %}" class="select2" id="node_select2" style="width: 100%" multiple="" tabindex="4">
+                                                        {% for node in nodes_remain %}
+                                                        <option value="{{ node.id }}" id="opt_{{ node.id }}">{{ node }}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="2" class="no-borders">
+                                                    <button type="button" class="btn btn-info btn-sm" id="btn-add-node">{% trans 'Join' %}</button>
+                                                </td>
+                                            </tr>
+                                        </form>
+
+                                        {% for node in asset_permission.nodes.all %}
+                                        <tr>
+                                          <td ><b class="bdg_group" data-gid={{ node.id }}>{{ node }}</b></td>
+                                          <td>
+                                              <button class="btn btn-danger btn-xs btn-remove-node" type="button" data-gid="{{ node.id }}" style="float: right;"><i class="fa fa-minus"></i></button>
+                                          </td>
+                                        </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+{% block custom_foot_js %}
+<script>
+function addAssets(assets) {
+    var the_url = "{% url 'api-perms:asset-permission-add-asset' pk=asset_permission.id %}";
+    var body = {
+        assets: assets
+    };
+    var success = function(data) {
+        location.reload();
+    };
+    APIUpdateAttr({
+        url: the_url,
+        body: JSON.stringify(body),
+        success: success
+    });
+}
+
+function removeAssets(assets) {
+    var the_url = "{% url 'api-perms:asset-permission-remove-asset' pk=asset_permission.id %}";
+    var body = {
+        assets: assets
+    };
+    var success = function(data) {
+        location.reload();
+    };
+    APIUpdateAttr({
+        url: the_url,
+        body: JSON.stringify(body),
+        success: success
+    });
+}
+
+function updateNodes(nodes, success) {
+    var the_url = "{% url 'api-perms:asset-permission-detail' pk=asset_permission.id %}";
+    var body = {
+        nodes: nodes
+    };
+    APIUpdateAttr({
+        url: the_url,
+        body: JSON.stringify(body),
+        success: success
+    });
+}
+
+
+$(document).ready(function () {
+     $('.select2').select2();
+})
+.on('click', '.btn-add-assets', function () {
+    var assets_selected = $("#asset_select2 option:selected").map(function () {
+        return $(this).attr('value');
+    }).get();
+    if (assets_selected.length === 0) {
+		return false;
+	}
+    addAssets(assets_selected);
+})
+.on('click', '.btn-remove-asset', function () {
+    var asset_id = $(this).data("gid");
+    if (asset_id === "") {
+        return
+    }
+    var assets = [asset_id];
+    removeAssets(assets)
+})
+.on('click', '#btn-add-node', function () {
+    var nodes_selected = {};
+    $("#node_select2 option:selected").each(function (i, data) {
+        nodes_selected[$(data).attr('value')] = $(data).text();
+    });
+    if (Object.keys(nodes_selected).length === 0) {
+		return false;
+	}
+    var nodes_origin = $('.bdg_group').map(function() {
+        return $(this).data('gid');
+    }).get();
+
+    var nodes = nodes_origin.concat(Object.keys(nodes_selected));
+    var success = function () {
+        $.map(nodes_selected, function(name, id) {
+            $('#opt_' + id).remove();
+            $('.group_edit tbody').append(
+               '<tr>' +
+               '<td><b class="bdg_group" data-gid="' + id + '">' + name + '</b></td>' +
+               '<td><button class="btn btn-danger btn-xs pull-right btn-leave-group" type="button"><i class="fa fa-minus"></i></button></td>' +
+               '</tr>'
+            )
+        });
+    };
+    updateNodes(nodes, success);
+})
+.on('click', '.btn-remove-node', function () {
+    var $this = $(this);
+    var $tr = $this.closest('tr');
+    var nodes = $('.bdg_group').map(function() {
+        if ($(this).data('gid') !== $this.data('gid')){
+            return $(this).data('gid');
+        }
+    }).get();
+    var success = function () {
+        $tr.remove()
+    };
+    updateNodes(nodes, success);
+})
+</script>
+{% endblock %}

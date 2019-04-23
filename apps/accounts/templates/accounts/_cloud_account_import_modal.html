@@ -1,0 +1,29 @@
+{% extends '_modal.html' %}
+{% load i18n %}
+{% block modal_id %}cloud_account_import_modal{% endblock %}
+{% block modal_title%}{% trans "Import cloud account" %}{% endblock %}
+{% block modal_body %}
+<p class="text-success">{% trans "Download template or use export csv format" %}</p>
+<form method="post" action="{% url 'accounts:account-import' %}" id="fm_cloud_account_import" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="form-group">
+        <label class="control-label" for="id_accounts">{% trans "Template" %}</label>
+        <a href="{% url 'accounts:account-export' %}" style="display: block">{% trans 'Download' %}</a>
+    </div>
+    <div class="form-group">
+        <label class="control-label" for="id_accounts">{% trans "Cloud account csv file" %}</label>
+        <input id="id_accounts" type="file" name="file" />
+        <span class="help-block red-fonts">{% trans 'If set id, will use this id update user existed' %}</span>
+    </div>
+</form>
+<p>
+    <p class="text-success" id="created_id"></p>
+    <p id="created_detail_id"></p>
+    <p class="text-warning" id="updated_id"></p>
+    <p id="updated_detail_id"></p>
+    <p class="text-danger" id="failed_id"></p>
+    <p id="failed_detail_id"></p>
+</p>
+{% endblock %}
+{% block modal_confirm_id %}btn_cloud_account_import{% endblock %}
+

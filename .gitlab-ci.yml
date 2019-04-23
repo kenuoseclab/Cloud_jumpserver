@@ -1,0 +1,15 @@
+stages:
+  - clean_env
+  - deploy
+    
+job clean_env_job:
+  stage: clean_env
+  script: echo "111"
+  tags: 
+    - go2cloud-platform
+  
+job deploy_job:
+  stage: deploy
+  script: echo "222"
+  tags:
+    - go2cloud-platform

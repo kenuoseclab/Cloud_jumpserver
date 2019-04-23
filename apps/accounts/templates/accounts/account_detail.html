@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block custom_head_css_js %}
+    <link href='{% static "css/plugins/select2/select2.min.css" %}' rel="stylesheet">
+    <script src='{% static "js/plugins/select2/select2.full.min.js" %}'></script>
+{% endblock %}
+
+{% block content %}
+    <div class="wrapper wrapper-content animated fadeInRight">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="ibox float-e-margins">
+                    <div class="panel-options">
+                        <ul class="nav nav-tabs">
+                            <li class="active">
+                                <a href="{% url 'accounts:account-detail' pk=object.id %}" class="text-center"><i class="fa fa-laptop"></i> {% trans 'Detail' %} </a>
+                            </li>
+                            <li class="pull-right">
+                                <a class="btn btn-outline btn-default" href="{% url 'accounts:account-update' pk=object.id %}"><i class="fa fa-edit"></i>{% trans 'Update' %}</a>
+                            </li>
+                            <li class="pull-right">
+                                <a class="btn btn-outline btn-danger btn-delete-account">
+                                    <i class="fa fa-trash-o"></i>{% trans 'Delete' %}
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="tab-content">
+                        <div class="col-sm-9" style="padding-left: 0;">
+                            <div class="ibox float-e-margins">
+                                <div class="ibox-title">
+                                    <span class="label"><b>{{ object.name }}</b></span>
+                                    <div class="ibox-tools">
+                                        <a class="collapse-link">
+                                            <i class="fa fa-chevron-up"></i>
+                                        </a>
+                                        <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                                            <i class="fa fa-wrench"></i>
+                                        </a>
+                                        <ul class="dropdown-menu dropdown-user">
+                                        </ul>
+                                        <a class="close-link">
+                                            <i class="fa fa-times"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="ibox-content">
+                                    <table class="table">
+                                        <tbody>
+                                        <tr class="no-borders-tr">
+                                            <td>{% trans 'Name' %}:</td>
+                                            <td><b>{{ object.name }}</b></td>
+                                        </tr>
+                                        <tr>
+                                            <td>{% trans 'Cloud Provider' %}:</td>
+                                            <td><b>{{ object.cloud_provider_display }}</b></td>
+                                        </tr>
+                                        <tr>
+                                            <td>{% trans 'AccessKey ID' %}:</td>
+                                            <td><b>{{ object.accesskey_id }}</b></td>
+                                        </tr>
+                                        <tr>
+                                            <td>{% trans 'AccessKey Secert' %}:</td>
+                                            <td><b>{{ object.accesskey_secert }}</b></td>
+                                        </tr>
+                                        <tr>
+                                            <td>{% trans 'Last sync time' %}:</td>
+                                            <td><b>{{ object.last_sync_time  }}</b></td>
+                                        </tr>
+                                        <tr>
+                                            <td>{% trans 'Comment' %}:</td>
+                                            <td><b>{{ object.comment }}</b></td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block content_bottom_left %}{% endblock %}
+{% block custom_foot_js %}
+<script>
+$(document).ready(function(){
+    console.log('account detail ready');
+}).on('click', '.btn-delete-account', function () {
+    var $this = $(this);
+    var name = "{{ object.name }}";
+    var uid = "{{ object.id }}";
+    var the_url = '{% url "api-accounts:account-detail" pk=DEFAULT_PK %}'.replace('{{ DEFAULT_PK }}', uid);
+    var redirect_url = "{% url 'accounts:account-list' %}";
+    objectDelete($this, name, the_url, redirect_url);
+})
+</script>
+{% endblock %}
