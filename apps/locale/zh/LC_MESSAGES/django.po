@@ -5165,3 +5165,7 @@ msgstr "建议系统用户名称由 `帐户名+主机名称` 组成，例如：'
 #: apps/users/templates/users/user_detail.html:6
 msgid "Warning, Before your reset your password, pls fill the current SITE URL where is located at `Basic setting` under the `System settings`."
 msgstr "注意: 在重置密码前,请在`系统设置-->基本设置`中填写`当前站点URL`."
+
+#
+msgid "ProjectID {ProjectID}"
+msgstr "项目ID {ProjectID}"

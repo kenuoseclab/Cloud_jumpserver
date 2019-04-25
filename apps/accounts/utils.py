@@ -461,7 +461,7 @@ def create_project_node(cloud_node, projectID=0):
     node = get_object_or_none(Node, key=cloud_node.key)
     if node:
         key = node.key
-        value = "Default Node" if projectID == 0 else "Project ID {ProjectID}".format(**{"ProjectID":projectID})
+        value =_("Default Node") if projectID == 0 else "ProjectID {ProjectID}".format(**{"ProjectID":projectID})
         project_node_key = key + ":{}".format(projectID)
         project_node = get_object_or_none(Node, key=project_node_key)
         if project_node:

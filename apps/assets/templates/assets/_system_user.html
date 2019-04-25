@@ -50,7 +50,7 @@
 
                             <h3 id="auth_title_id">{% trans 'Auth' %}</h3>
                             {% block auth %}
-                            {% comment %}
+
                             <div class="auto-generate">
                                 <div class="form-group">
                                     <label for="{{ form.auto_generate_key.id_for_label }}" class="col-sm-2 control-label">{% trans 'Auto generate key' %}</label>
@@ -59,19 +59,19 @@
                                     </div>
                                 </div>
                             </div>
-                            {% endcomment %}
+
                             <div class="auth-fields">
                                 {% bootstrap_field form.password layout="horizontal" %}
                                 {% bootstrap_field form.private_key_file layout="horizontal" %}
                             </div>
-                            {% comment %}
+
                             <div class="form-group">
                                 <label for="{{ form.auto_push.id_for_label }}" class="col-sm-2 control-label">{% trans 'Auto push' %}</label>
                                 <div class="col-sm-8">
                                     {{ form.auto_push}}
                                 </div>
                             </div>
-                            {% endcomment %}
+
                             {% endblock %}
                             <div id="command-filter-block">
                                 <h3>{% trans 'Command filter' %}</h3>
