@@ -364,7 +364,11 @@ def genernate_asset_dic(cloud_name, instance):
 
                 elif k == "PublicIpAddresses":
                     if isinstance(v, list):
+<<<<<<< HEAD
                         COMMENT_DIC["PublicIpAddresses"] = v[0]
+=======
+                        COMMENT_DIC[k] = v[0]
+>>>>>>> a5447041eb6a8f21f4db95feeb8b49cc3da2384e
                     else:
                         COMMENT_DIC[k] = v
                 elif k == "Placement":
@@ -406,7 +410,7 @@ def genernate_asset_dic(cloud_name, instance):
                 elif k ==  "ZoneId":
                     COMMENT_DIC[k] = v if v else None
                 elif k == "PublicIpAddress":
-                    COMMENT_DIC["PublicIpAddresses"] = v.get("IpAddress") if v.get("IpAddress") else None
+                    COMMENT_DIC["PublicIpAddresses"] = v.get("IpAddress")[0] if v.get("IpAddress") else None
 
         elif cloud_name == "HuaWei":
             pass
@@ -501,7 +505,7 @@ def get_projectId(cloud_name, instance):
 
 def assign_asset_to_node(key, hostname):
     '''assign new asset to special node
-    :param node_id: a string, node  id
+    :param key: a string, node  id
     :param hostname: a string, asset of hostname
     :return: a  bool.
     '''

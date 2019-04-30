@@ -155,7 +155,11 @@ DATABASES = {
         'USER': CONFIG.DB_USER,
         'PASSWORD': CONFIG.DB_PASSWORD,
         'ATOMIC_REQUESTS': True,
+<<<<<<< HEAD
         'init_command':'SET foreign_key_checks = 0;',
+=======
+        'init_command': 'SET foreign_key_checks = 0;',
+>>>>>>> a5447041eb6a8f21f4db95feeb8b49cc3da2384e
     }
 }
 
