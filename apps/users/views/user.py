@@ -85,6 +85,17 @@ class UserCreateView(AdminUserRequiredMixin, SuccessMessageMixin, CreateView):
         return context
 
     def form_valid(self, form):
+        password = form.cleaned_data.get('password')
+        if not password:
+            return super().form_valid(form)
+
+        is_ok = check_password_rules(password)
+        if not is_ok:
+            form.add_error(
+                "password", _("* Your password does not meet the requirements")
+            )
+            return self.form_invalid(form)
+            
         user = form.save(commit=False)
         user.created_by = self.request.user.username or 'System'
         user.save()

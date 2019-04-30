@@ -48,7 +48,7 @@ def send_user_created_mail(user):
     </br>
     Username: %(username)s
     </br>
-    <a href="%(rest_password_url)s?token=%(rest_password_token)s">click here to set your password</a>
+    <a href="%(rest_password_url)s?token=%(rest_password_token)s">If you have forgotten your password, please click here to reset it.</a>
     </br>
     This link is valid for 1 hour. After it expires, <a href="%(forget_password_url)s?email=%(email)s">request new one</a>
 
