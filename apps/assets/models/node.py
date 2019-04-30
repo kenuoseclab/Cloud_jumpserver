@@ -261,7 +261,7 @@ class Node(OrgModelMixin):
             key = max([int(k) for k in org_nodes_roots_keys])
             key = str(key + 1) if key != 0 else '2'
             set_current_org(_current_org)
-            root = cls.objects.create(key=key, value=_current_org.name)
+            root = cls.objects.create(key=key, value=_current_org.name,id=self.id)
             return root
 
     @classmethod

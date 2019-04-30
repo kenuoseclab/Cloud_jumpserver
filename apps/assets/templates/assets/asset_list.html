@@ -717,6 +717,10 @@ $(document).ready(function(){
             break;
     }
     $(".ipt_check_all").prop("checked", false)
+    setTimeout( function () {
+        $data_table.ajax.reload();
+        window.location.reload();
+    }, 3000);
 })
 .on('click', '#btn_asset_modal_confirm', function () {
     var assets_selected = asset_table2.selected;

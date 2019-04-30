@@ -537,14 +537,20 @@ def get_projectId(cloud_name, instance):
 
 def assign_asset_to_node(key, hostname):
     '''assign new asset to special node
-    :param node_id: a string, node  id
+    :param key: a string, node  id
     :param hostname: a string, asset of hostname
     :return: a  bool.
     '''
+    ROOT_NODE_KEY = "1"
     node = get_object_or_none(Node, key=key)
     asset = get_object_or_none(Asset, hostname=hostname)
-    if node and asset:
+    try:
         asset.nodes.add(node)
+    except Exception:
+        print(111)
+        node = get_object_or_none(Node,key=ROOT_NODE_KEY)
+        asset.nodes.add(node)
+        assign_asset_to_node(key,hostname)
 
 
 if __name__ == "__main__":
