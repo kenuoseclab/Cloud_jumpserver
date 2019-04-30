@@ -364,11 +364,8 @@ def genernate_asset_dic(cloud_name, instance):
 
                 elif k == "PublicIpAddresses":
                     if isinstance(v, list):
-<<<<<<< HEAD
                         COMMENT_DIC["PublicIpAddresses"] = v[0]
-=======
                         COMMENT_DIC[k] = v[0]
->>>>>>> a5447041eb6a8f21f4db95feeb8b49cc3da2384e
                     else:
                         COMMENT_DIC[k] = v
                 elif k == "Placement":
@@ -418,7 +415,7 @@ def genernate_asset_dic(cloud_name, instance):
             pass
        
         asset_dict["comment"] = COMMENT.format(**COMMENT_DIC)
-        COMMENT
+        
         return asset_dict
     else:
         return None
@@ -509,8 +506,6 @@ def assign_asset_to_node(key, hostname):
     :param hostname: a string, asset of hostname
     :return: a  bool.
     '''
-    # ROOT_NODE_KEY = "1"
-    # root_node = get_object_or_none(Node,key=ROOT_NODE_KEY)
     node = get_object_or_none(Node, key=key)
     asset = get_object_or_none(Asset, hostname=hostname)
     try:

@@ -319,3 +319,4 @@ class AccountAssetImportView(AdminUserRequiredMixin, JSONResponseMixin, FormView
         else:
             data = {'valid': False,
                     'msg': _('No instance for this account')}
+            return self.render_json_response(data)
