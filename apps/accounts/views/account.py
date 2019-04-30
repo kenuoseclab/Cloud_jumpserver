@@ -236,11 +236,14 @@ class AccountAssetImportView(AdminUserRequiredMixin, JSONResponseMixin, FormView
 
     def form_valid(self, form):
         sync_time = datetime.datetime.now()
-        node_id = self.request.GET.get("node_id")
-        node = get_object_or_none(Node, id=node_id) if node_id else Node.root()
+        account_id = self.request.GET.get("account_id")
+
+        # Will create ROOT node while user first time importing assets.
+        if not get_object_or_none(Node, key="1"):
+            Node.root()
 
         try:
-            account_id = form.cleaned_data['account_id']
+            account_id = account_id if account_id else form.cleaned_data['account_id']
             account_id = ''.join(account_id.split("-"))
             hostname_map = json.loads(form.cleaned_data["hostname_map"])
 
@@ -264,12 +267,11 @@ class AccountAssetImportView(AdminUserRequiredMixin, JSONResponseMixin, FormView
         cloud_node = create_cloud_node(cloud_name, account_id,account_name)
 
         created, updated, failed = [], [], []
-        assets = []
         instances = cache.get(account_id, [])
         if instances:
             for instance in instances:
                 for res_ins in hostname_map:
-                    if res_ins["hostname"] == instance["InstanceName"]:
+                    if res_ins["number"] == instance["InstanceId"]:
                         projectID = get_projectId(cloud_name, instance)
                         project_node_key = create_project_node(cloud_node, projectID)
 
@@ -281,15 +283,12 @@ class AccountAssetImportView(AdminUserRequiredMixin, JSONResponseMixin, FormView
 
                         if not asset:
                             try:
-                                if len(Asset.objects.filter(hostname=asset_dict.get('hostname'))):
+                                if len(Asset.objects.filter(number=asset_dict.get('number'))):
                                     raise Exception(_('already exists'))
                                 with transaction.atomic():
                                     asset = Asset.objects.create(**asset_dict)
-                                    if node:
-                                        asset.nodes.set([node])
                                     assign_asset_to_node(project_node_key, asset_dict["hostname"])
                                     created.append(asset_dict['hostname'])
-                                    assets.append(created)
                             except Exception as e:
                                 failed.append('%s: %s' % (asset_dict['hostname'], str(e)))
                         else:
@@ -320,4 +319,3 @@ class AccountAssetImportView(AdminUserRequiredMixin, JSONResponseMixin, FormView
         else:
             data = {'valid': False,
                     'msg': _('No instance for this account')}
-            return self.render_json_response(data)

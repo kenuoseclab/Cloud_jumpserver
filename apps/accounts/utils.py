@@ -360,19 +360,20 @@ def genernate_asset_dic(cloud_name, instance):
                     asset_dict["disk_total"] = '{:.1f}G'.format(v["DiskSize"])
                     asset_dict["disk_info"] = str({v["DiskType"]: v["DiskSize"]})
                 elif k == "InstanceId":
-                    asset_dict["admin_user"] = get_object_or_none(AdminUser, name=v)
+                    asset_dict["number"] = v
 
                 elif k == "PublicIpAddresses":
                     if isinstance(v, list):
-                        COMMENT_DIC[k] = v[0]
-                    COMMENT_DIC[k] = v
+                        COMMENT_DIC["PublicIpAddresses"] = v[0]
+                    else:
+                        COMMENT_DIC[k] = v
                 elif k == "Placement":
                     COMMENT_DIC["ZoneId"] = v.get("Zone")
 
         elif cloud_name == "Aliyun":
             for k, v in instance.items():
                 if k == "Status":
-                    asset_dict["is_active"] = True if v == "RUNNING" else False
+                    asset_dict["is_active"] = True if v == "Running" else False
                 elif k == "VpcAttributes":
                     try:
                         asset_dict["ip"] = v.get("PrivateIpAddress").get("IpAddress")[0]
@@ -400,7 +401,7 @@ def genernate_asset_dic(cloud_name, instance):
                     asset_dict["cpu_count"] = 1
                     asset_dict["cpu_cores"] = v
                 elif k == "InstanceId":
-                    asset_dict["admin_user"] = get_object_or_none(AdminUser, name=v)
+                    asset_dict["number"] = v
 
                 elif k ==  "ZoneId":
                     COMMENT_DIC[k] = v if v else None
@@ -411,8 +412,9 @@ def genernate_asset_dic(cloud_name, instance):
             pass
         else:  # AWS cloud
             pass
-
+       
         asset_dict["comment"] = COMMENT.format(**COMMENT_DIC)
+        COMMENT
         return asset_dict
     else:
         return None
@@ -503,10 +505,17 @@ def assign_asset_to_node(key, hostname):
     :param hostname: a string, asset of hostname
     :return: a  bool.
     '''
+    # ROOT_NODE_KEY = "1"
+    # root_node = get_object_or_none(Node,key=ROOT_NODE_KEY)
     node = get_object_or_none(Node, key=key)
     asset = get_object_or_none(Asset, hostname=hostname)
-    if node and asset:
-        asset.nodes.add(node)
+    try:
+        if node and asset:
+            asset.nodes.add(node)
+    except Exception:
+        return "assgin to node occur error"
+        
+       
 
 
 if __name__ == "__main__":

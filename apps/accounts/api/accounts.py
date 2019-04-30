@@ -77,6 +77,7 @@ class AccountAssetsApi(APIView):
                 for i in ins:
                     response_data = dict()
                     response_data["hostname"] = i.get("InstanceName")
+                    response_data["number"] = i.get("InstanceId")
                     IP = i.get("PrivateIpAddresses")                                          # tencent
                     if not IP:
                         IP = i.get("VpcAttributes").get("PrivateIpAddress").get("IpAddress")  # ali

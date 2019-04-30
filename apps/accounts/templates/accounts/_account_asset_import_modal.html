@@ -29,6 +29,7 @@
                    <tr>
                        <th class="text-center"><input type="checkbox" class="ipt_check_all" onclick="SelectAll()"></th>
                        <th class="text-center">{% trans 'Hostname' %}</th>
+		       <th class="text-center">{% trans 'Number' %}</th>
                        <th class="text-center">{% trans 'IP' %}</th>
                        <th class="text-center">{% trans 'Reachable' %}</th>
                    </tr>
@@ -79,7 +80,7 @@ $(document).ready(function(){
                 var checkRow = inputs[i];
                 var tr = checkRow.parentNode.parentNode;
                 var tds = tr.cells;
-                hostname_list[num] = {hostname:tds[1].textContent};
+                hostname_list[num] = {number:tds[2].textContent};
                 num++;
             }
         }
