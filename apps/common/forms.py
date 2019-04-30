@@ -57,7 +57,7 @@ class BaseForm(forms.Form):
 class BasicSettingForm(BaseForm):
     SITE_URL = forms.URLField(
         label=_("Current SITE URL"),
-        help_text="eg: http://jumpserver.abc.com:8080"
+        help_text="eg: http://smartcs.com:8080"
     )
     USER_GUIDE_URL = forms.URLField(
         label=_("User Guide URL"), required=False,
