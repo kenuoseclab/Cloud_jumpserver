@@ -155,6 +155,7 @@ DATABASES = {
         'USER': CONFIG.DB_USER,
         'PASSWORD': CONFIG.DB_PASSWORD,
         'ATOMIC_REQUESTS': True,
+        'init_command':'SET foreign_key_checks = 0;',
     }
 }
 
@@ -333,7 +334,7 @@ EMAIL_HOST_USER = 'your_account@qq.com'
 EMAIL_HOST_PASSWORD = ''
 EMAIL_USE_SSL = False
 EMAIL_USE_TLS = False
-EMAIL_SUBJECT_PREFIX = '[JMS] '
+EMAIL_SUBJECT_PREFIX = '[SmartCS] '
 
 REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
@@ -379,9 +380,9 @@ OTP_VALID_WINDOW = CONFIG.OTP_VALID_WINDOW
 # Auth LDAP settings
 AUTH_LDAP = False
 AUTH_LDAP_SERVER_URI = 'ldap://localhost:389'
-AUTH_LDAP_BIND_DN = 'cn=admin,dc=jumpserver,dc=org'
+AUTH_LDAP_BIND_DN = 'cn=admin,dc=smartcs,dc=org'
 AUTH_LDAP_BIND_PASSWORD = ''
-AUTH_LDAP_SEARCH_OU = 'ou=tech,dc=jumpserver,dc=org'
+AUTH_LDAP_SEARCH_OU = 'ou=tech,dc=smartcs,dc=org'
 AUTH_LDAP_SEARCH_FILTER = '(cn=%(user)s)'
 AUTH_LDAP_START_TLS = False
 AUTH_LDAP_USER_ATTR_MAP = {"username": "cn", "name": "sn", "email": "mail"}
