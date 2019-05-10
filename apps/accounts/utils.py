@@ -449,7 +449,7 @@ def assign_asset_to_node(key, hostname):
 
 
 if __name__ == "__main__":
-    secretId = "AKIDZyGQXbErpY4MPDl7D4g3HH2c5KL8Y8G8"
-    secretKey = "kFUTDk38yZw4xc5JHzRdZFfspWxDE0Xq"
+    secretId = "AKIDZyGQXbErpY*************"
+    secretKey = "kFUTDk38yZw4xc5JHzRdZFfs"
     cloud_name = "Qcloud"
     print(Instances(secretId, secretKey, cloud_name))
