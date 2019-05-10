@@ -1,12 +1,10 @@
-[TOC]
+### Smart CS
 
-### Anchnet堡垒机
+[![Django](https://img.shields.io/badge/django-2.1-brightgreen.svg?style=plastic)](https://www.djangoproject.com/)[![Python3](https://img.shields.io/badge/python-3.6-green.svg?style=plastic)](https://www.python.org/)[![Ansible](https://img.shields.io/badge/ansible-2.4.2.0-blue.svg?style=plastic)](https://www.ansible.com/)[![Paramiko](https://img.shields.io/badge/paramiko-2.4.1-green.svg?style=plastic)](http://www.paramiko.org/)
 
-- 基于jumpserver的二次开发堡垒机
+- Smart CS是基于jumpserver(`v1.4.6`)二次开发的开源云运维安全审计系统. 旨在运维人员更加便捷的批量管理各类服务器.
 
-
-
-#### 新增功能
+#### 特色功能
 
 1. **公有云/主机系统用户导入**
 
@@ -14,10 +12,13 @@
 
 2. **云资产一键导入及同步**
 
-   - 用户通过各云账号进行
-   - 定时更新
-   - 关联系统账户
-   - 通过资产项目组分配节点
+   - 用户通过各云账号进行批量导入云资产
+   - 支持目前支持 `阿里云`,`腾讯云`
+   - 根据资产所属项目自动分配节点.
+
+#### 使用说明
+- 见说明文档
+- 安装coco服务参考:[安装COCO]
 
 #### Jumpserver 项目结构说明
 
@@ -41,26 +42,26 @@
     │   │   ├── hands.py                 // 与其他app存在交互的模块相互调用               
     │   │   ├── tests.py                 // 测试用例文件
     │   │   ├── utils.py                 // 该app下的通用的函数方法
-    │   │   ├── __init__.py              // 对外暴露的接口,放到该文件中,方便别的 APP 引用
+    │   │   ├── __init__.py              // 对外暴露的接口,放到该文件中,方便别的 APP 引用
     │   ├── audits                       // 日志审计app
     │   ├── authentication               // 用户认证模块(安全组件)
     │   ├── common                       // 系统设置app(email发送,terminal终端操作,设置) 
     │   ├── fixtures                     // 初始化数据目录
     │   │   ├── fake.json                // 生成大量测试数据    
-    │   │   └── init.json                // 初始化项目数据库
+    │   │   └── init.json                // 初始化项目数据库
     │   ├── jumpserver                   // 项目设置app
     │   │   ├── conf.py                  // 加载配置文件 
-    │   │   ├── context_processor.py 
-    │   │   ├── __init__.py
+    │   │   ├── context_processor.py 
+    │   │   ├── __init__.py
     │   │   ├── middleware.py            // 中间件文件
     │   │   ├── settings.py              // 项目设置文件
-    │   │   ├── swagger.py
+    │   │   ├── swagger.py
     │   │   ├── urls.py                  // 项目入口 Url(顶层url)
     │   │   ├── utils.py              
     │   │   ├── views.py                 // 视图函数
     │   │   └── wsgi.py                  // django框架WSGI服务器
     │   ├── locale                       // 项目多语言目录
-    │   │   └── zh    
+    │   │   └── zh    
     │   ├── __init__.py                  // apps对外暴露接口
     │   ├── manage.py                    // 管理项目脚本文件
     │   ├── ops                          // 作业中心app(命令行)
@@ -74,9 +75,9 @@
     ├── config_example.yml               // 配置文件样例
     ├── config.yml                       // 生产环境配置文件
     ├── data                             
-    │   ├── celery
-    │   ├── media
-    │   └── static
+    │   ├── celery
+    │   ├── media
+    │   └── static
     ├── Dockerfile                       // docker 安装文件
     ├── docs                             // 所有 DOC 文件放到该目录
     ├── entrypoint.sh
@@ -85,14 +86,14 @@
     ├── logs                             // 日志目录
     ├── README.md                        // README 文档
     ├── requirements                     // 各系统依赖包
-    │   ├── mac_requirements.txt
-    │   ├── requirements.txt
-    │   └── rpm_requirements.txt
+    │   ├── mac_requirements.txt
+    │   ├── requirements.txt
+    │   └── rpm_requirements.txt
     ├── run_server.py                     // 启动文件
     ├── tmp                               // 进程文件
     │   ├── beat.pid
-    │   ├── celery.pid
-    │   └── gunicorn.pid
+    │   ├── celery.pid
+    │   └── gunicorn.pid
     └── utils                             // 通用函数
     ```
 ```
