@@ -17,7 +17,14 @@ from django.utils.translation import gettext as _
 
 from aliyunsdkcore.client import AcsClient
 from aliyunsdkcore.request import CommonRequest
+from aliyunsdkecs.request.v20140526.DescribeInstancesRequest import DescribeInstancesRequest
 from aliyunsdkcore.acs_exception.exceptions import ServerException
+
+from tencentcloud.common import credential
+from tencentcloud.common.profile.client_profile import ClientProfile
+from tencentcloud.common.profile.http_profile import HttpProfile
+from tencentcloud.common.exception.tencent_cloud_sdk_exception import TencentCloudSDKException
+from tencentcloud.cvm.v20170312 import cvm_client, models
 
 from common.utils import get_object_or_none
 from assets.models import Asset, SystemUser, AdminUser, Node
@@ -34,149 +41,70 @@ instances
 class TencentInstancesByAk:
     '''get instances by tencent ak '''
 
+    instances = []
+
     def __init__(self, secret_id, secret_key):
-        self.secret_id = secret_id
-        self.secret_key = secret_key
-        self.timeData = str(int(time.time()))
-        self.nonceData = int(random.random() * 10000)
-        # self.actionData = action                        # Action一般是操作名称
-        self.httpProfile = "cvm.tencentcloudapi.com"  # HOST
-        self.signMethod = "HmacSHA256"  # 加密方法
-        self.requestMethod = "GET"  # 请求方法，在签名时会遇到，如果签名时使用的是GET，那么在请求时也请使用GET
-        self.versionData = '2017-03-12'  # 版本选择
-
-    def sign(self, secretKey, signStr, signMethod):
-        ''' 签名函数,参考api签名鉴权
-        :param secretKey: 用户的secretKey
-        :param signStr:   传递进来字符串，加密时需要使用
-        :param signMethod: 加密方法
-        :return: base64 编码后的签签名
-        '''
-        if sys.version_info[0] > 2:
-            signStr = signStr.encode("utf-8")
-            secretKey = secretKey.encode("utf-8")
-
-        # 根据参数中的signMethod来选择加密方式
-        if signMethod == 'HmacSHA256':
-            digestmod = hashlib.sha256
-        elif signMethod == 'HmacSHA1':
-            digestmod = hashlib.sha1
-
-        # 完成加密，生成加密后的数据
-        hashed = hmac.new(secretKey, signStr, digestmod)
-        base64 = binascii.b2a_base64(hashed.digest())[:-1]
-
-        if sys.version_info[0] > 2:
-            base64 = base64.decode()
-
-        return base64
-
-    def dictToStr(self, dictData):
-        '''将Dict转为List并且拼接成字符串
-        :param dictData: 请求参数,字典格式
-        :return: 拼接好的字符串
-        '''
-        tempList = []
-        for eveKey, eveValue in dictData.items():
-            tempList.append(str(eveKey) + "=" + str(eveValue))
-        return "&".join(tempList)
-
-    def signStrFun(self, dictData):
-        '''对字典进行排序
-        :param dictData: 请求参数字典格式
-        :return:
-        '''
-        tempList = []
-        resultList = []
-        tempDict = {}
-        for eveKey, eveValue in dictData.items():
-            tempLowerData = eveKey.lower()
-            tempList.append(tempLowerData)
-            tempDict[tempLowerData] = eveKey
-        tempList.sort()
-        for eveData in tempList:
-            tempStr = str(tempDict[eveData]) + "=" + \
-                      str(dictData[tempDict[eveData]])
-            resultList.append(tempStr)
-        return "&".join(resultList)
-
-    def generate_sign_dic(self, **kwargs):
-        '''生成签名字典函数,新加入Signature键
-        :return:
-        '''
-        signDictData = {
-            'Action': kwargs.get("action"),
-            'Nonce': self.nonceData,
-            'Region': kwargs.get('regionData'),
-            'SecretId': self.secret_id,
-            'SignatureMethod': self.signMethod,
-            'Timestamp': int(self.timeData),
-            'Version': self.versionData,
-        }
-        requestStr = "%s%s%s%s%s" % (
-            self.requestMethod, self.httpProfile, "/", "?", self.signStrFun(signDictData))
-        signData = urllib.parse.quote(self.sign(self.secret_key, requestStr, self.signMethod))
-        actionArgs = signDictData
-        actionArgs["Signature"] = signData
-        return signDictData
-
-    def generate_req_url(self, action='DescribeInstances', region_area=''):
-        '''生成请求地址
-        :return:
-        '''
-        actionArgs = self.generate_sign_dic(action=action, regionData=region_area)
-        # 根据uri构建请求的url
-        requestUrl = "https://%s/?" % (self.httpProfile)
-        # 将请求的url和参数进行拼接
-        req_url = requestUrl + self.dictToStr(actionArgs)
-        return req_url
-
-    def json_to_dict(self, str):
-        import json
-        dic = json.loads(str)
-        return dic
-        pass
-
-    def get_region_instance(self, area):
-        '''获取资源服务器函数
-        :param region_area: 可用区域
-        :return: 资源详情 type: json字符串
-        '''
-        req_url = self.generate_req_url(region_area=area)
-        # responseData = urllib.request.urlopen(req_url).read().decode("utf-8")
-        try:
-            r = requests.get(req_url)
-            if r.status_code == 200:
-                context = r.text
-                instance_dic = self.json_to_dict(context)
-                instance_list = []
-                if instance_dic["Response"]["TotalCount"] > 0:
-                    for instance in instance_dic.get("Response").get("InstanceSet"):
-                        instance_list.append(instance)
-                    return instance_list
-        except Exception as e:
-            return str(e)
+        self.cred = credential.Credential(secret_id, secret_key)
+        self.httpProfile = HttpProfile()
+        self.httpProfile.endpoint = "cvm.tencentcloudapi.com"
+        self.clientProfile = ClientProfile()
+        self.clientProfile.httpProfile = self.httpProfile
 
     @property
-    def get_all_region(self, action="DescribeRegions"):
-        '''获取所有地域列表参数
-        :return: 服务器地域列表
-        '''
-        req_url = self.generate_req_url(action)
-        r = requests.get(req_url)
+    def get_all_regions(self):
         try:
-            if r.status_code == 200:
-                context = r.text
-                regions_dic = self.json_to_dict(context)
-                region_list = []
-                for region in regions_dic["Response"]["RegionSet"]:
-                    if region["RegionState"] == "AVAILABLE":
-                        region_list.append(region["Region"])
-                return region_list
+            client = cvm_client.CvmClient(self.cred, "", self.clientProfile)
+            req = models.DescribeRegionsRequest()
+            res = client.DescribeRegions(req)
+            res = json.loads(res.to_json_string())
+            regions = res.get("RegionSet")
+            return regions
+        except TencentCloudSDKException:
+            return {"msg": _("InvalidAccessKeyId.NotFound Specified access key is not found")}
+
+
+    def get_region_instance(self, region, offset_str=''):
+
+        offset = "1" * len(offset_str)
+        data = {"Offset": len(offset),
+                "Limit": 100}
+        try:
+            client = cvm_client.CvmClient(self.cred, region, self.clientProfile)
+            req = models.DescribeInstancesRequest()
+            params = json.dumps(data)
+            req.from_json_string(params)
+
+            res = client.DescribeInstances(req)
+            res = json.loads(res.to_json_string())
+            tmp_ins = res.get("InstanceSet")
+            for ins in tmp_ins:
+                self.instances.append(ins)
+            totalCount = res.get("TotalCount")
+
+            if totalCount > data["Offset"] + data["Limit"]:
+                offset_str = offset + "1" * len(tmp_ins)
+                self.get_region_instance(region, offset_str=offset_str)
             else:
-                return None
-        except Exception:
-            return None
+                return self.instances
+        except TencentCloudSDKException:
+            return {"msg": _("InvalidAccessKeyId.NotFound Specified access key is not found")}
+
+    def get_all_instances(self):
+        regions = self.get_all_regions
+        if isinstance(regions, dict):
+            return regions
+        else:
+            tasks = []
+            for region in regions:
+                t = threading.Thread(target=self.get_region_instance,args=(region["Region"],))
+                tasks.append(t)
+
+            for t in tasks:
+                t.start()
+
+            for t in tasks:
+                if t.is_alive():
+                    t.join()
 
 
 class AliInstancesByAK:
@@ -196,28 +124,37 @@ class AliInstancesByAK:
         request.set_version('2014-05-26')
         return request
 
-    def get_region_instance_detail(self, region_id, region_endpoint):
+    def get_region_instance_detail(self, region_id, instance_page=''):
         '''get instances from one special region
         :param region_id: a string,regionID,区域id ,egg:`cn-qingdao`
         :return: a list, all instances
         '''
+        tmp_list = "1"* len(instance_page)
         client = AcsClient(self.secret_id, self.secret_key, region_id)
-        request = self.__common_request_settings
-        request.set_domain(region_endpoint)
-        request.set_action_name("DescribeInstances")
-        request.add_query_param('RegionId', region_id)
+        request = DescribeInstancesRequest()
+        request.set_accept_format('json')
+        request.set_PageSize(100)
+
         try:
             response = client.do_action_with_exception(request)
             str_response = str(response, encoding="utf-8")
             result = json.loads(str_response).get('Instances').get('Instance')
-
             if result:
+                totalCount = json.loads(str_response).get("TotalCount")
+                page_number = json.loads(str_response).get("PageNumber")
                 self.instances.append(result)
+                len_list = tmp_list + "1" * len(result)
+                if totalCount > len(len_list):
+                    request.set_PageNumber(page_number + 1)
+                    self.get_region_instance_detail(region_id, instance_page=len_list)
+                else:
+                    return
             else:
                 return
         except Exception:
-            pass
+            return {"msg":_("Import asset occur error, pls try again later!") }
 
+        
     @property
     def get_all_regions(self):
         '''get all available reigins for current region
@@ -239,24 +176,26 @@ class AliInstancesByAK:
         '''get instances through muti_threading
         :return:
         '''
-        regions = self.get_all_regions
-        if isinstance(regions,dict):
-            return regions
-        else:
-            tasks = []
-            for ins in regions:
-                t = threading.Thread(target=self.get_region_instance_detail,
-                                     args=(ins["RegionId"], ins["RegionEndpoint"],))
-                tasks.append(t)
+        try:
+            regions = self.get_all_regions
+            if isinstance(regions,dict):
+                return regions
+            else:
+                tasks = []
+                for ins in regions:
+                    t = threading.Thread(target=self.get_region_instance_detail,
+                                         args=(ins["RegionId"],))
+                    tasks.append(t)
 
-            for t in tasks:
-                t.start()
+                for t in tasks:
+                    t.start()
 
-            for t in tasks:
-                if t.is_alive():
-                    t.join()
+                for t in tasks:
+                    if t.is_alive():
+                        t.join()
+        except Exception:
+            return {"msg":_("Import asset occur error, pls try again later!") }
 
-            return None
 
 
 class HuaweiInstancesByAk:
@@ -302,19 +241,11 @@ def Instances(secret_id, secret_key, cloud_name):
         return dezip_list(ali.instances)
 
     elif cloud_name == "Qcloud":
-        Tect = TencentInstancesByAk(secret_id, secret_key)
-        regin_list = Tect.get_all_region
-        instances = []
-        if not regin_list:
-            return None
-        for area in regin_list:
-            instance_data = Tect.get_region_instance(area=area)
-            if instance_data != None:
-                for ins in instance_data:
-                    instances.append(ins)
-            else:
-                continue
-        return instances
+        tec = TencentInstancesByAk(secret_id, secret_key)
+        err = tec.get_all_instances()
+        if err:
+            return err
+        return tec.instances
     elif cloud_name == "HuaWei":
         pass
 

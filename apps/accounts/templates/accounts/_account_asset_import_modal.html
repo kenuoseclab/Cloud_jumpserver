@@ -37,16 +37,8 @@
                <tbody></tbody>
 </table>
 
-<!--result show after imported asset -->
-<p>
-    <p class="text-faild" id="no-instance" style="color:#C20000;font-size: 20px;display: none"></p>
-    <p class="text-success" id="created"></p>
-    <p id="created_detail"></p>
-    <p class="text-warning" id="updated"></p>
-    <p id="updated_detail"></p>
-    <p class="text-danger" id="failed"></p>
-    <p id="failed_detail"></p>
-</p>
+<p align="center" class="text-faild" id="no-instance" style="color:#C20000;font-size: 20px;display: none"></p>
+
 
 <script>
 var current_node_id = null;
@@ -92,7 +84,7 @@ $(document).ready(function(){
     $('#id_hostname_map').attr("value",JSON.stringify(hostname_list));
 
     var data = {'account_id':$('#account_id').attr('value'),
-                  'hostname_map':JSON.stringify(hostname_list)}
+                'hostname_map':JSON.stringify(hostname_list)}
     var $form = $('#fm_account_asset_import');
     var action = $form.attr("action");
     if (current_node_id){
@@ -118,6 +110,17 @@ $('.modal').on('hidden.bs.modal',function () {      // while close modal templat
 })
 
 </script>
+{% endblock %}
+{% block modal_p %}
+<!--result show after imported asset -->
+<p  align="left">
+    <p align="left" class="text-success" id="created"></p>
+    <p align="left" id="created_detail"></p>
+    <p align="left" class="text-warning" id="updated"></p>
+    <p align="left" id="updated_detail"></p>
+    <p align="left" class="text-danger" id="failed"></p>
+    <p align="left" id="failed_detail"></p>
+</p>
 {% endblock %}
 {% block modal_confirm_id %}btn_account_asset_import{% endblock %}
 

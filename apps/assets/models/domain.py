@@ -77,7 +77,7 @@ class Gateway(AssetUser):
             return False, str(e)
 
         sock = proxy.get_transport().open_channel(
-            'direct-tcpip', ('127.0.0.1', self.port), ('127.0.0.1', 0)
+            'direct-tcpip', (self.ip, self.port), ('127.0.0.1', 0)
         )
 
         try:

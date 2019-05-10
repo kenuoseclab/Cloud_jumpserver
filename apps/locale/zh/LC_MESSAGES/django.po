@@ -157,7 +157,7 @@ msgstr "IP"
 #: assets/templates/assets/system_user_list.html:38
 #: users/templates/users/user_group_granted_asset.html:47
 msgid "Reachable"
-msgstr "可用性"
+msgstr "激活"
 
 #: accounts/templates/accounts/_cloud_account_import_modal.html:4
 msgid "Import cloud account"
@@ -5037,3 +5037,7 @@ msgstr "MFA 解绑成功，返回登录页面"
 
 #~ msgid "ProjectID {ProjectID}"
 #~ msgstr "项目ID {ProjectID}"
+
+#
+msgid "Import asset occur error, pls try again later!"
+msgstr "导入资产出错,检查网络及ak,请稍后再试!"
